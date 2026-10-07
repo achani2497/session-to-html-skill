@@ -1,0 +1,27 @@
+{
+  "name": "session-to-html-skill",
+  "version": "1.0.0",
+  "description": "Install the session-to-html OpenCode skill and /session-to-html command",
+  "type": "commonjs",
+  "bin": {
+    "session-to-html-skill": "bin/install.js"
+  },
+  "files": [
+    "bin",
+    "skills",
+    "commands",
+    "README.md"
+  ],
+  "keywords": [
+    "opencode",
+    "skill",
+    "session",
+    "html",
+    "chat"
+  ],
+  "license": "MIT",
+  "packageManager": "pnpm@10.17.1",
+  "publishConfig": {
+    "access": "public"
+  }
+}

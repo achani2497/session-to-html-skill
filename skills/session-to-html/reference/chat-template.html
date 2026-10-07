@@ -1,0 +1,123 @@
+<!--
+  session-to-html :: chat template
+  ---------------------------------
+  Base obligatoria para el HTML de salida. NO inventes estilos nuevos.
+  Reemplazá los tres placeholders y guardá el resultado como chat_<session_id>.html:
+
+    {{TITLE}}     -> título de la sesión (texto plano, escapado)
+    {{SUBTITLE}}  -> "N mensajes · provider/model · fecha"
+    {{MESSAGES}}  -> uno o más bloques .msg (ver shape abajo)
+
+  Shape de cada mensaje (repetir por cada turno):
+    <div class="msg user">            (o "assistant")
+      <div class="meta"><span class="who">Vos</span><span class="time">dd/mm HH:MM</span></div>
+      <div class="bubble"> ...HTML renderizado del Markdown del mensaje... </div>
+    </div>
+
+  El <div class="bubble"> espera HTML YA renderizado (p, h1-h3, ul/ol, pre>code,
+  table, blockquote, hr), no Markdown crudo. Fuente de verdad del CSS: este archivo.
+-->
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TITLE}}</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --user: #2563eb;
+    --user-bg: #1e3a8a;
+    --assistant-bg: #1c2129;
+    --text: #e6e9ef;
+    --muted: #8b93a7;
+    --border: #2a303c;
+    --code-bg: #0b0d11;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(15,17,21,.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+  }
+  header h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  header .sub { margin-top: 4px; color: var(--muted); font-size: 12.5px; }
+  .chat { max-width: 900px; margin: 0 auto; padding: 24px 16px 80px; }
+  .msg { display: flex; flex-direction: column; margin: 14px 0; }
+  .msg.user { align-items: flex-end; }
+  .msg.assistant { align-items: flex-start; }
+  .meta { font-size: 12px; color: var(--muted); margin: 0 6px 5px; display: flex; gap: 8px; }
+  .msg.user .meta { flex-direction: row-reverse; }
+  .meta .who { font-weight: 600; color: #aab3c5; }
+  .bubble {
+    max-width: 88%;
+    padding: 12px 16px;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    overflow-wrap: anywhere;
+  }
+  .msg.user .bubble {
+    background: var(--user-bg);
+    border-color: #2f4fca;
+    border-bottom-right-radius: 4px;
+  }
+  .msg.assistant .bubble {
+    background: var(--assistant-bg);
+    border-bottom-left-radius: 4px;
+  }
+  .bubble > :first-child { margin-top: 0; }
+  .bubble > :last-child { margin-bottom: 0; }
+  .bubble p { margin: 0.5em 0; }
+  .bubble h1,.bubble h2,.bubble h3,.bubble h4 { margin: 1em 0 .4em; line-height: 1.3; }
+  .bubble h1 { font-size: 1.35em; }
+  .bubble h2 { font-size: 1.2em; }
+  .bubble h3 { font-size: 1.05em; }
+  .bubble ul,.bubble ol { margin: .5em 0; padding-left: 1.4em; }
+  .bubble li { margin: .2em 0; }
+  .bubble a { color: #7aa2ff; }
+  .bubble blockquote {
+    margin: .6em 0; padding: 2px 12px;
+    border-left: 3px solid #3a4356; color: #b8c0d0;
+  }
+  .bubble code {
+    background: var(--code-bg);
+    padding: 2px 6px; border-radius: 5px;
+    font: 13px/1.5 "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    color: #e3c07b;
+  }
+  .bubble pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    overflow-x: auto;
+    margin: .7em 0;
+  }
+  .bubble pre code { background: none; padding: 0; color: #d7dbe4; font-size: 12.8px; }
+  .bubble table { border-collapse: collapse; margin: .7em 0; font-size: 14px; display: block; overflow-x: auto; }
+  .bubble th,.bubble td { border: 1px solid var(--border); padding: 6px 10px; text-align: left; }
+  .bubble th { background: #232936; }
+  .bubble hr { border: none; border-top: 1px solid var(--border); margin: 1em 0; }
+  .bubble img { max-width: 100%; border-radius: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>{{TITLE}}</h1>
+  <div class="sub">{{SUBTITLE}}</div>
+</header>
+<main class="chat">
+{{MESSAGES}}
+</main>
+</body>
+</html>
