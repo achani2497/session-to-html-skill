@@ -1,6 +1,6 @@
 {
   "name": "session-to-html-skill",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Install the session-to-html OpenCode skill and /session-to-html command",
   "type": "commonjs",
   "bin": {

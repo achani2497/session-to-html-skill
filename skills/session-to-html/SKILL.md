@@ -24,25 +24,29 @@ Eres un agente automatizado experto en la gestión de historiales de OpenCode. T
 4. Si el usuario ya pasó un Session ID o un número como argumento del comando, salteá la pregunta y usá esa sesión directamente.
 
 ### Paso 2: Exportación Automatizada
-Una vez que el usuario elija una sesión de la lista (ej. la opción "2"):
-1. Identifica el `<session_id>` correspondiente.
-2. Exporta la sesión a un **directorio temporal**, nunca dentro del proyecto:
-   `mkdir -p /tmp/opencode && opencode export <session_id> > /tmp/opencode/sesion_<session_id>.json`
+1. Una vez que el usuario elija, identificá el `<session_id>` correspondiente.
+2. Exportá la sesión a un **directorio temporal**, nunca dentro del proyecto:
+   `mkdir -p "${TMPDIR:-/tmp}/opencode" && opencode export <session_id> > "${TMPDIR:-/tmp}/opencode/sesion_<session_id>.json"`
 3. El archivo exportado es **JSON**: un objeto con `messages[]`, donde cada mensaje trae `parts[]` de tipo `text`, `reasoning`, `tool`, `step-start`, `step-finish`, `patch`, etc.
 
-### Paso 3: Procesamiento y Limpieza del Contenido
-Lee el archivo temporal `/tmp/opencode/sesion_<session_id>.json` y aplica las siguientes reglas de conversión:
-1. **Filtro estricto:** de cada mensaje, conserva únicamente las partes de tipo `text`. Elimina por completo `reasoning` (el "thinking"), las llamadas y resultados de `tool`, y los `step-start` / `step-finish` / `patch`.
-2. **Extracción:** extrae únicamente el texto de los mensajes del **Usuario** (`role: "user"`) y las respuestas finales del **Modelo** (`role: "assistant"`). Descarta los turnos de assistant que no tengan ninguna parte de texto visible.
+### Paso 3: Generación del HTML (script incluido, sin dependencias)
+1. Corré el script que viene con esta skill (está en su carpeta `reference/`):
+   `python3 ~/.config/opencode/skills/session-to-html/reference/build_chat.py "${TMPDIR:-/tmp}/opencode/sesion_<session_id>.json" "chat_<session_id>.html"`
+   Si la skill está instalada en otra ruta, usá `<ruta-de-esta-skill>/reference/build_chat.py`.
+2. El script ya hace todo el procesamiento:
+   - conserva **solo las partes de tipo `text`** de los mensajes `user` y `assistant`; descarta `reasoning` (el "thinking"), `tool`, `step-start`/`step-finish` y `patch`;
+   - convierte el Markdown de cada mensaje a HTML;
+   - llena `reference/chat-template.html` y guarda `chat_<session_id>.html` en el directorio actual;
+   - abre el HTML en el navegador por defecto. Pasale `--no-open` si NO querés que lo abra.
+3. Requiere **únicamente `python3` (librería estándar)**. No hay que instalar nada más: nada de `pip`, nada de la librería `markdown`, nada de `xdg-open`.
 
-### Paso 4: Generación de la Interfaz HTML (Formato Chat)
-1. Lee `reference/chat-template.html` (relativo al directorio de esta skill) y usalo como **base obligatoria**: contiene el CSS del estilo aprobado (tema oscuro, header sticky, burbujas).
-2. Reemplazá los placeholders `{{TITLE}}`, `{{SUBTITLE}}` y `{{MESSAGES}}`, y guardá el resultado como `chat_<session_id>.html` en el directorio del proyecto (es el entregable que el usuario quiere conservar).
-3. **No inventes estilos nuevos** ni cambies colores, fuentes, anchos o radios: el CSS del template es la única fuente de verdad. Debe quedar embebido (autocontenido, sin CDN) para funcionar offline.
-4. Cada turno va como un bloque `.msg` (`user` / `assistant`) según el shape documentado en el template. El `<div class="bubble">` espera **HTML ya renderizado**, no Markdown crudo: convertí el Markdown de cada texto antes de insertarlo. Una forma confiable es `python3` con la librería `markdown` y las extensiones `fenced_code`, `tables`, `sane_lists`, `nl2br`, `codehilite`.
+### Paso 4: Estilo
+- El diseño lo define íntegramente `reference/chat-template.html` (tema oscuro, header sticky, burbujas). **No inventes estilos** ni cambies colores, fuentes, anchos o radios.
+- Si hay que cambiar el diseño, se edita el template — jamás un repositorio de HTML ya generado.
 
-### Paso 5: Visualización Automatizada
-1. **Abre el archivo HTML inmediatamente** en el navegador web predeterminado del usuario ejecutando el comando del sistema correspondiente en Ubuntu:
-   `xdg-open chat_<session_id>.html`
-2. Notifica al usuario que el proceso finalizó con éxito, que la conversación ya está lista para leerse cómodamente, e indica la ruta del HTML generado.
-3. Elimina el archivo temporal `/tmp/opencode/sesion_<session_id>.json` para no dejar basura en el entorno de trabajo.
+### Paso 5: Cierre
+1. Avisá al usuario que el proceso terminó, indicá la ruta del `chat_<session_id>.html` y que la conversación ya está lista para leerse cómodamente.
+2. Borrá el temporal: `rm -f "${TMPDIR:-/tmp}/opencode/sesion_<session_id>.json"`.
+
+### Fallback (solo si no hay `python3`)
+Si `python3` no está disponible, generá el HTML a mano: leé el JSON, quedate con las partes `text` de `user`/`assistant`, escapá el HTML del texto, convertí Markdown básico (títulos, listas, bloques de código, tablas, negrita) y llená `reference/chat-template.html`. Después abrí el archivo con la herramienta de apertura del sistema operativo (Linux `xdg-open`, macOS `open`, Windows `start`).

@@ -1,6 +1,5 @@
 ---
 description: Export an OpenCode session to a chat-style HTML file and open it in the browser
-agent: gentle-orchestrator
 ---
 
 Load the `session-to-html` skill and follow it exactly.
